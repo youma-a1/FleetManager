@@ -1,0 +1,27 @@
+﻿<Window x:Class="FleetManager.ShopWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Boutique" Height="400" Width="600">
+    <Grid Margin="10">
+        <!-- Titre -->
+        <TextBlock Text="Bienvenue dans la Boutique !" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   HorizontalAlignment="Center" 
+                   Margin="0,10,0,0"/>
+
+        <!-- Tableau des véhicules -->
+        <DataGrid x:Name="VehiclesDataGrid" 
+                  AutoGenerateColumns="True"
+                  Margin="0,60,0,0"
+                  VerticalAlignment="Top"
+                  Height="250"/>
+
+        <!-- Bouton de déconnexion -->
+        <Button Content="Déconnexion" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Bottom" 
+                Width="100" 
+                Click="LogoutButton_Click"/>
+    </Grid>
+</Window>

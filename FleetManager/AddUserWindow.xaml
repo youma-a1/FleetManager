@@ -1,0 +1,71 @@
+﻿<Window x:Class="FleetManager.AddUserWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ajouter un utilisateur" Height="530" Width="450"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Titre -->
+        <TextBlock Grid.Row="0" Text="➕ Nouvel utilisateur" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <!-- Nom -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <TextBlock Text="Nom :" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <TextBox x:Name="NomTextBox" Padding="8" FontSize="14"/>
+        </StackPanel>
+
+        <!-- Prénom -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,10">
+            <TextBlock Text="Prénom :" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <TextBox x:Name="PrenomTextBox" Padding="8" FontSize="14"/>
+        </StackPanel>
+
+        <!-- Email -->
+        <StackPanel Grid.Row="3" Margin="0,0,0,10">
+            <TextBlock Text="Email :" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <TextBox x:Name="EmailTextBox" Padding="8" FontSize="14"/>
+        </StackPanel>
+
+        <!-- Mot de passe -->
+        <StackPanel Grid.Row="4" Margin="0,0,0,10">
+            <TextBlock Text="Mot de passe :" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <PasswordBox x:Name="PasswordBox" Padding="8" FontSize="14"/>
+            <TextBlock Text="(Minimum 8 caractères)" FontSize="11" Foreground="Gray" Margin="0,3,0,0"/>
+        </StackPanel>
+
+        <!-- Rôle -->
+        <StackPanel Grid.Row="5" Margin="0,0,0,10">
+            <TextBlock Text="Rôle :" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <ComboBox x:Name="RoleComboBox" Padding="8" FontSize="14" SelectedIndex="0">
+                <ComboBoxItem Content="Client"/>
+                <ComboBoxItem Content="Agent"/>
+                <ComboBoxItem Content="Admin"/>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Message d'erreur -->
+        <TextBlock x:Name="ErrorTextBlock" Grid.Row="6" Text="" Foreground="Red" 
+                   TextWrapping="Wrap" Margin="0,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.RowSpan="2" Width="410"/>
+
+        <!-- Boutons -->
+        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Content=" Créer" Click="CreateButton_Click" Width="100" Margin="0,0,10,0"
+                    Padding="10,8" Background="#4CAF50" Foreground="White" BorderThickness="0"
+                    FontWeight="Bold" Cursor="Hand"/>
+            <Button Content=" Annuler" Click="CancelButton_Click" Width="100"
+                    Padding="10,8" Background="#9E9E9E" Foreground="White" BorderThickness="0"
+                    FontWeight="Bold" Cursor="Hand"/>
+        </StackPanel>
+    </Grid>
+</Window>
