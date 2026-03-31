@@ -1,27 +1,68 @@
 ﻿<Window x:Class="FleetManager.ShopWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Boutique" Height="400" Width="600">
-    <Grid Margin="10">
-        <!-- Titre -->
-        <TextBlock Text="Bienvenue dans la Boutique !" 
-                   FontSize="24" 
-                   FontWeight="Bold" 
-                   HorizontalAlignment="Center" 
-                   Margin="0,10,0,0"/>
+        Title="Boutique Véhicules" Height="600" Width="1000"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <!-- Tableau des véhicules -->
-        <DataGrid x:Name="VehiclesDataGrid" 
-                  AutoGenerateColumns="True"
-                  Margin="0,60,0,0"
-                  VerticalAlignment="Top"
-                  Height="250"/>
+        <!-- En-tête -->
+        <Border Grid.Row="0" Background="#43A047" Padding="20">
+            <Grid>
+                <TextBlock Text="🛒 Boutique Véhicules" 
+                           FontSize="24" FontWeight="Bold" Foreground="White" 
+                           VerticalAlignment="Center"/>
+                <TextBlock x:Name="ClientNameText" Text="Bienvenue !" 
+                           FontSize="14" Foreground="White" 
+                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
 
-        <!-- Bouton de déconnexion -->
-        <Button Content="Déconnexion" 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Bottom" 
-                Width="100" 
-                Click="LogoutButton_Click"/>
+        <!-- Liste des véhicules -->
+        <DataGrid Grid.Row="1" x:Name="VehiclesDataGrid" 
+                  AutoGenerateColumns="False" 
+                  CanUserAddRows="False" 
+                  IsReadOnly="True"
+                  Margin="20"
+                  AlternatingRowBackground="LightGray">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                <DataGridTextColumn Header="Marque" Binding="{Binding Marque}" Width="120"/>
+                <DataGridTextColumn Header="Modèle" Binding="{Binding Modele}" Width="120"/>
+                <DataGridTextColumn Header="Immatriculation" Binding="{Binding Immatriculation}" Width="130"/>
+                <DataGridTextColumn Header="Carburant" Binding="{Binding Carburant}" Width="100"/>
+                <DataGridTextColumn Header="Kilométrage" Binding="{Binding Kilometrage}" Width="100"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="100"/>
+
+                <DataGridTemplateColumn Header="Actions" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="👁️ Voir" Click="ViewButton_Click" Tag="{Binding Id}"
+                                        Margin="5" Padding="8,4" Background="#2196F3" Foreground="White" BorderThickness="0"/>
+                                <Button Content="🛒 Commander" Click="OrderButton_Click" Tag="{Binding Id}"
+                                        Margin="5" Padding="8,4" Background="#4CAF50" Foreground="White" BorderThickness="0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Boutons en bas -->
+        <Border Grid.Row="2" Background="#F5F5F5" Padding="20" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock x:Name="TotalText" Text="Total : 0 véhicules" 
+                           FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                <Button Content="🔄 Actualiser" Click="RefreshButton_Click"
+                        Padding="12,8" Margin="0,0,10,0" Background="#FF9800" Foreground="White" BorderThickness="0"/>
+                <Button Content="🚪 Déconnexion" Click="LogoutButton_Click"
+                        Padding="12,8" Background="#F44336" Foreground="White" BorderThickness="0"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

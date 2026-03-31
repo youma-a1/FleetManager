@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Media;
 using MySql.Data.MySqlClient;
 
 namespace FleetManager
@@ -9,8 +10,42 @@ namespace FleetManager
         public MainWindow()
         {
             InitializeComponent();
-            // Nettoie les anciennes connexions au démarrage
             CleanOldConnections();
+        }
+
+        // 🔹 Affiche un message avec MessageBox au lieu de contrôles XAML
+        private void ShowMessage(string message, MessageType type)
+        {
+            MessageBoxImage icon;
+            string title;
+
+            switch (type)
+            {
+                case MessageType.Success:
+                    icon = MessageBoxImage.Information;
+                    title = "Succès";
+                    break;
+                case MessageType.Error:
+                    icon = MessageBoxImage.Error;
+                    title = "Erreur";
+                    break;
+                case MessageType.Warning:
+                    icon = MessageBoxImage.Warning;
+                    title = "Attention";
+                    break;
+                default:
+                    icon = MessageBoxImage.None;
+                    title = "Information";
+                    break;
+            }
+
+            MessageBox.Show(message, title, MessageBoxButton.OK, icon);
+        }
+
+        // 🔹 Cache le message (non utilisé avec MessageBox, mais gardé pour compatibilité)
+        private void HideMessage()
+        {
+            // Méthode vide - pas nécessaire avec MessageBox
         }
 
         // 🔹 Nettoie les connexions de plus de 24h
@@ -18,11 +53,11 @@ namespace FleetManager
         {
             try
             {
-                using (var conn = new MySqlConnection(AppConfig.ConnectionString))
+                using (MySqlConnection conn = new MySqlConnection(AppConfig.ConnectionString))
                 {
                     conn.Open();
                     string query = "DELETE FROM connexions_actives WHERE date_connexion < DATE_SUB(NOW(), INTERVAL 24 HOUR)";
-                    using (var cmd = new MySqlCommand(query, conn))
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.ExecuteNonQuery();
                     }
@@ -39,19 +74,19 @@ namespace FleetManager
                 string email = EmailTextBox.Text.Trim();
                 if (string.IsNullOrEmpty(email))
                 {
-                    MessageBox.Show("Entre un email d'abord !", "Attention");
+                    ShowMessage("⚠️ Veuillez entrer un email d'abord !", MessageType.Warning);
                     return;
                 }
 
-                string newPassword = "Compac?123000";
+                string newPassword = "admin123";
                 string newHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
-                using (var conn = new MySqlConnection(AppConfig.ConnectionString))
+                using (MySqlConnection conn = new MySqlConnection(AppConfig.ConnectionString))
                 {
                     conn.Open();
                     string query = "UPDATE utilisateurs SET mot_de_passe = @Hash WHERE email = @Email";
 
-                    using (var cmd = new MySqlCommand(query, conn))
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@Hash", newHash);
                         cmd.Parameters.AddWithValue("@Email", email);
@@ -60,60 +95,62 @@ namespace FleetManager
 
                         if (rows > 0)
                         {
-                            MessageBox.Show($"✅ Mot de passe réinitialisé !\n\nEmail: {email}\nMot de passe: {newPassword}", "Succès");
+                            MessageBox.Show($"✅ Mot de passe réinitialisé avec succès !\n\n📧 Email: {email}\n🔑 Nouveau mot de passe: {newPassword}",
+                                          "Réinitialisation réussie",
+                                          MessageBoxButton.OK,
+                                          MessageBoxImage.Information);
+                            PasswordBox.Clear();
                         }
                         else
                         {
-                            MessageBox.Show("❌ Utilisateur non trouvé.", "Erreur");
+                            ShowMessage("❌ Aucun utilisateur trouvé avec cet email.", MessageType.Error);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur : {ex.Message}", "Erreur");
+                ShowMessage($"❌ Erreur : {ex.Message}", MessageType.Error);
             }
         }
 
-        // 🔹 Connexion avec enregistrement de la session
+        // 🔹 Connexion
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
+            HideMessage();
+
             string email = EmailTextBox.Text.Trim();
             string password = PasswordBox.Password;
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
-                ResultTextBlock.Text = "Veuillez remplir tous les champs.";
-                ResultTextBlock.Foreground = System.Windows.Media.Brushes.Red;
+                ShowMessage("⚠️ Veuillez remplir tous les champs.", MessageType.Warning);
                 return;
             }
 
             try
             {
-                using (var conn = new MySqlConnection(AppConfig.ConnectionString))
+                using (MySqlConnection conn = new MySqlConnection(AppConfig.ConnectionString))
                 {
                     conn.Open();
                     string query = "SELECT id, nom, prenom, role, mot_de_passe, statut FROM utilisateurs WHERE email=@Email LIMIT 1";
 
-                    using (var cmd = new MySqlCommand(query, conn))
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@Email", email);
 
-                        using (var reader = cmd.ExecuteReader())
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (!reader.Read())
                             {
-                                ResultTextBlock.Text = "Email ou mot de passe incorrect.";
-                                ResultTextBlock.Foreground = System.Windows.Media.Brushes.Red;
+                                ShowMessage("❌ Email ou mot de passe incorrect.", MessageType.Error);
                                 return;
                             }
 
                             string statut = reader.GetString("statut");
                             if (statut == "bloque")
                             {
-                                ResultTextBlock.Text = "⛔ Compte bloqué.";
-                                ResultTextBlock.Foreground = System.Windows.Media.Brushes.Red;
-                                MessageBox.Show("Ton compte a été bloqué. Contacte l'administrateur.", "Accès refusé");
+                                ShowMessage("🚫 Votre compte a été bloqué. Contactez l'administrateur.", MessageType.Error);
                                 return;
                             }
 
@@ -126,15 +163,13 @@ namespace FleetManager
                             }
                             catch
                             {
-                                ResultTextBlock.Text = "⚠️ Hash invalide ! Utilise 'Réinitialiser mot de passe'";
-                                ResultTextBlock.Foreground = System.Windows.Media.Brushes.Orange;
+                                ShowMessage("⚠️ Format de mot de passe invalide. Utilisez 'Réinitialiser le mot de passe'", MessageType.Warning);
                                 return;
                             }
 
                             if (!isValid)
                             {
-                                ResultTextBlock.Text = "Email ou mot de passe incorrect.";
-                                ResultTextBlock.Foreground = System.Windows.Media.Brushes.Red;
+                                ShowMessage("❌ Email ou mot de passe incorrect.", MessageType.Error);
                                 return;
                             }
 
@@ -150,7 +185,7 @@ namespace FleetManager
 
                     // 🔹 Enregistre la connexion
                     string insertConn = "INSERT INTO connexions_actives (utilisateur_id) VALUES (@UserId)";
-                    using (var cmd = new MySqlCommand(insertConn, conn))
+                    using (MySqlCommand cmd = new MySqlCommand(insertConn, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserId", CurrentUser.Id);
                         cmd.ExecuteNonQuery();
@@ -158,18 +193,19 @@ namespace FleetManager
 
                     // 🔹 Met à jour la dernière connexion
                     string updateLastLogin = "UPDATE utilisateurs SET derniere_connexion = NOW() WHERE id = @Id";
-                    using (var cmd = new MySqlCommand(updateLastLogin, conn))
+                    using (MySqlCommand cmd = new MySqlCommand(updateLastLogin, conn))
                     {
                         cmd.Parameters.AddWithValue("@Id", CurrentUser.Id);
                         cmd.ExecuteNonQuery();
                     }
                 }
 
-                // 🔹 Redirige selon le rôle avec connectionString
+                // 🔹 Redirige selon le rôle
                 Window nextWindow = null;
 
                 switch (CurrentUser.Role.ToLower())
                 {
+                    case "super_admin":
                     case "admin":
                         nextWindow = new AdminPanel(AppConfig.ConnectionString);
                         break;
@@ -180,30 +216,36 @@ namespace FleetManager
                         nextWindow = new ShopWindow(AppConfig.ConnectionString);
                         break;
                     default:
-                        MessageBox.Show("Rôle non reconnu !", "Erreur");
+                        ShowMessage($"❌ Rôle non reconnu : '{CurrentUser.Role}'", MessageType.Error);
                         return;
                 }
 
-                nextWindow.Show();
-                this.Close();
+                MessageBox.Show("✅ Connexion réussie ! Bienvenue.", "Succès", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 nextWindow.Show();
                 this.Close();
             }
             catch (Exception ex)
             {
-                ResultTextBlock.Text = "Erreur : " + ex.Message;
-                ResultTextBlock.Foreground = System.Windows.Media.Brushes.Red;
+                ShowMessage($"❌ Erreur de connexion : {ex.Message}", MessageType.Error);
             }
         }
 
         private void BoutiqueImage_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Action sur clic image
+            // Action sur clic image (optionnel)
         }
     }
 
-    // 🔹 Classe utilisateur étendue
+    // 🔹 Enum pour les types de messages
+    public enum MessageType
+    {
+        Success,
+        Error,
+        Warning
+    }
+
+    // 🔹 Classe utilisateur pour stocker les infos de session
     public static class CurrentUser
     {
         public static int Id { get; set; }

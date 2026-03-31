@@ -1,103 +1,393 @@
 ﻿<Window x:Class="FleetManager.AgentPanel"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Panneau Agent" Height="700" Width="1200"
-        WindowStartupLocation="CenterScreen">
-    <Grid Margin="15">
+        Title="Panneau Agent - Fleet Manager" Height="750" Width="1400"
+        WindowStartupLocation="CenterScreen" WindowState="Maximized">
+    <Window.Resources>
+        <!-- Style pour les boutons modernes -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="5" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- En-tête -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-            <TextBlock Text="🔧 Panneau Agent" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
-            <TextBlock x:Name="AgentNameText" Text="" FontSize="14" Margin="20,0,0,0" VerticalAlignment="Center" Foreground="Gray"/>
-        </StackPanel>
-
-        <!-- Statistiques et actions -->
-        <Grid Grid.Row="1" Margin="0,0,0,15">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Stats -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <Border Background="#E3F2FD" Padding="15,10" CornerRadius="5" Margin="0,0,10,0">
+        <!-- ====================================== -->
+        <!-- En-tête avec dégradé -->
+        <!-- ====================================== -->
+        <Border Grid.Row="0" Height="90">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#1976D2" Offset="0"/>
+                    <GradientStop Color="#1565C0" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid Margin="30,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🚗" FontSize="36" VerticalAlignment="Center" Margin="0,0,15,0"/>
                     <StackPanel>
-                        <TextBlock Text="Véhicules totaux" FontSize="12" Foreground="Gray"/>
-                        <TextBlock x:Name="TotalVehiclesText" Text="0" FontSize="22" FontWeight="Bold" Foreground="#1976D2"/>
+                        <TextBlock Text="Panneau Agent" 
+                                   FontSize="28" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock x:Name="AgentNameText" Text="Connecté : Agent" 
+                                   FontSize="14" Foreground="#E3F2FD" Margin="0,2,0,0"/>
                     </StackPanel>
-                </Border>
-                <Border Background="#E8F5E9" Padding="15,10" CornerRadius="5" Margin="0,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="Véhicules actifs" FontSize="12" Foreground="Gray"/>
-                        <TextBlock x:Name="ActiveVehiclesText" Text="0" FontSize="22" FontWeight="Bold" Foreground="#388E3C"/>
-                    </StackPanel>
-                </Border>
-                <Border Background="#FFF3E0" Padding="15,10" CornerRadius="5" Margin="0,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="Clients connectés" FontSize="12" Foreground="Gray"/>
-                        <TextBlock x:Name="ConnectedClientsText" Text="0" FontSize="22" FontWeight="Bold" Foreground="#F57C00"/>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
+                </StackPanel>
 
-            <!-- Boutons actions -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="➕ Ajouter véhicule" Click="AddVehicle_Click" 
-                        Padding="15,10" Background="#4CAF50" Foreground="White" 
-                        BorderThickness="0" FontWeight="Bold" Cursor="Hand" Margin="0,0,10,0"/>
-                <Button Content="📊 Statistiques" Click="ShowStatistics_Click" 
-                        Padding="15,10" Background="#2196F3" Foreground="White" 
-                        BorderThickness="0" FontWeight="Bold" Cursor="Hand"/>
-            </StackPanel>
-        </Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="🔄 Actualiser" Click="RefreshButton_Click"
+                            Style="{StaticResource ModernButton}"
+                            Background="#4CAF50" Margin="0,0,10,0"/>
+                    <Button Content="🚪 Déconnexion" Click="LogoutButton_Click"
+                            Style="{StaticResource ModernButton}"
+                            Background="#F44336"/>
+                </StackPanel>
+            </Grid>
+        </Border>
 
-        <!-- Liste des véhicules -->
-        <DataGrid x:Name="VehiclesDataGrid" Grid.Row="2" AutoGenerateColumns="False" 
-                  CanUserAddRows="False" SelectionMode="Single" IsReadOnly="True"
-                  AlternatingRowBackground="LightGray" GridLinesVisibility="Horizontal">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                <DataGridTemplateColumn Header="Image" Width="80">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Image Source="{Binding ImageUrl}" Width="60" Height="40" Stretch="UniformToFill" Margin="2"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Marque" Binding="{Binding Marque}" Width="120"/>
-                <DataGridTextColumn Header="Modèle" Binding="{Binding Modele}" Width="120"/>
-                <DataGridTextColumn Header="Immatriculation" Binding="{Binding Immatriculation}" Width="120"/>
-                <DataGridTextColumn Header="Carburant" Binding="{Binding Carburant}" Width="100"/>
-                <DataGridTextColumn Header="Kilométrage" Binding="{Binding Kilometrage}" Width="100"/>
-                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="100"/>
-                <DataGridTemplateColumn Header="Actions" Width="*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="✏️ Modifier" Click="EditVehicle_Click" Tag="{Binding Id}"
-                                        Margin="2" Padding="5,2" Background="#FF9800" Foreground="White" BorderThickness="0"/>
-                                <Button Content="📈 MAJ KM" Click="UpdateKm_Click" Tag="{Binding Id}"
-                                        Margin="2" Padding="5,2" Background="#2196F3" Foreground="White" BorderThickness="0"/>
-                                <Button Content="🗑️ Supprimer" Click="DeleteVehicle_Click" Tag="{Binding Id}"
-                                        Margin="2" Padding="5,2" Background="#F44336" Foreground="White" BorderThickness="0"/>
+        <!-- ====================================== -->
+        <!-- Statistiques et Actions -->
+        <!-- ====================================== -->
+        <Border Grid.Row="1" Background="#F5F7FA" Padding="30,20" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Cartes de statistiques -->
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Total véhicules -->
+                    <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="20" Margin="0,0,15,0">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <StackPanel>
+                                <TextBlock Text="🚗 Total véhicules" FontSize="13" Foreground="#757575" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="TotalVehiclesText" Text="0" FontSize="32" FontWeight="Bold" Foreground="#2196F3" Margin="0,5,0,0"/>
                             </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+                            <Ellipse Width="60" Height="60" Fill="#E3F2FD" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-10,-10,0"/>
+                        </Grid>
+                    </Border>
 
-        <!-- Boutons en bas -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-            <Button Content="🔄 Actualiser" Click="RefreshButton_Click" Width="120" Margin="5" Padding="8"/>
-            <Button Content="👥 Voir clients" Click="ViewClients_Click" Width="130" Margin="5" Padding="8"/>
-            <Button Content="🚪 Déconnexion" Click="LogoutButton_Click" Width="120" Margin="5" Padding="8"/>
-        </StackPanel>
+                    <!-- Véhicules actifs -->
+                    <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="20" Margin="0,0,15,0">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <StackPanel>
+                                <TextBlock Text="✅ Véhicules actifs" FontSize="13" Foreground="#757575" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="ActiveVehiclesText" Text="0" FontSize="32" FontWeight="Bold" Foreground="#4CAF50" Margin="0,5,0,0"/>
+                            </StackPanel>
+                            <Ellipse Width="60" Height="60" Fill="#E8F5E9" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-10,-10,0"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Clients connectés -->
+                    <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="20" Margin="0,0,15,0">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <StackPanel>
+                                <TextBlock Text="👥 Clients connectés" FontSize="13" Foreground="#757575" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="ConnectedClientsText" Text="0" FontSize="32" FontWeight="Bold" Foreground="#FF9800" Margin="0,5,0,0"/>
+                            </StackPanel>
+                            <Ellipse Width="60" Height="60" Fill="#FFF3E0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-10,-10,0"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Actions rapides -->
+                    <Border Grid.Column="3" Background="White" CornerRadius="10" Padding="20">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="⚡ Actions rapides" FontSize="13" Foreground="#757575" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <Button Content="➕ Nouveau" Click="AddVehicle_Click"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#4CAF50" HorizontalAlignment="Stretch" Margin="0,0,0,5"/>
+                            <Button Content="📊 Stats" Click="ShowStatistics_Click"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#2196F3" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Boutons d'actions principaux -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+                    <TextBlock Text="📌 Actions générales :" FontSize="13" FontWeight="Bold" 
+                               Foreground="#424242" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                    <Button Content="➕ Ajouter un véhicule" Click="AddVehicle_Click"
+                            Style="{StaticResource ModernButton}"
+                            Background="#4CAF50" FontSize="13" Margin="0,0,10,0"/>
+                    <Button Content="📊 Voir les statistiques" Click="ShowStatistics_Click"
+                            Style="{StaticResource ModernButton}"
+                            Background="#2196F3" FontSize="13"/>
+                </StackPanel>
+
+                <!-- NOUVEAUX BOUTONS - Recherche FlotteVehicules -->
+                <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="15" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="🔍 FlotteVehicules - Exercice (Ajouter, Supprimer, Recherche)" 
+                                   FontSize="13" FontWeight="Bold" 
+                                   Foreground="#673AB7" Margin="0,0,0,10"/>
+                        <WrapPanel>
+                            <!-- AJOUTER / SUPPRIMER -->
+                            <Button Content="➕ Ajouter (INSERT SQL)" Click="AjouterFlotte_Click"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#4CAF50" FontSize="12" Padding="12,8" Margin="0,0,10,5"/>
+
+                            <Button Content="🗑️ Supprimer (DELETE SQL)" Click="SupprimerFlotte_Click"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#F44336" FontSize="12" Padding="12,8" Margin="0,0,10,5"/>
+
+                            <!-- RECHERCHES -->
+                            <Button Content="🔍 Par immatriculation" Click="RechercherParImmat_Click"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#673AB7" FontSize="12" Padding="12,8" Margin="0,0,10,5"/>
+
+                            <Button Content="🚗 Par marque" Click="RechercherParMarque_Click"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#FF9800" FontSize="12" Padding="12,8" Margin="0,0,10,5"/>
+
+                            <Button Content="⚡ Par carburant" Click="RechercherParCarburant_Click"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#00BCD4" FontSize="12" Padding="12,8" Margin="0,0,10,5"/>
+
+                            <Button Content="📏 Par kilométrage max" Click="RechercherParKm_Click"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#9C27B0" FontSize="12" Padding="12,8" Margin="0,0,0,5"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ====================================== -->
+        <!-- DataGrid des véhicules -->
+        <!-- ====================================== -->
+        <Border Grid.Row="2" Padding="30,20" Background="White">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Titre de la section -->
+                <TextBlock Grid.Row="0" Text="📋 Liste des véhicules" 
+                           FontSize="20" FontWeight="Bold" Foreground="#424242" Margin="0,0,0,15"/>
+
+                <!-- DataGrid moderne -->
+                <DataGrid Grid.Row="1" x:Name="VehiclesDataGrid" 
+                          AutoGenerateColumns="False" 
+                          CanUserAddRows="False" 
+                          SelectionMode="Single" 
+                          IsReadOnly="True"
+                          Background="White"
+                          RowBackground="White"
+                          AlternatingRowBackground="#FAFAFA"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="#E0E0E0"
+                          BorderThickness="1"
+                          BorderBrush="#E0E0E0"
+                          HeadersVisibility="Column"
+                          RowHeight="60">
+
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F5F7FA"/>
+                            <Setter Property="Foreground" Value="#424242"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="13"/>
+                            <Setter Property="Padding" Value="15,10"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                            <Setter Property="BorderBrush" Value="#2196F3"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Padding" Value="15,0"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Foreground" Value="#757575"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTemplateColumn Header="Image" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="5" Width="70" Height="45" Margin="5">
+                                        <Border.Background>
+                                            <ImageBrush ImageSource="{Binding ImageUrl}" Stretch="UniformToFill"/>
+                                        </Border.Background>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Marque" Binding="{Binding Marque}" Width="130">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Foreground" Value="#212121"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Modèle" Binding="{Binding Modele}" Width="130">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#424242"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Immatriculation" Binding="{Binding Immatriculation}" Width="140">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontFamily" Value="Consolas"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Foreground" Value="#1976D2"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Carburant" Binding="{Binding Carburant}" Width="110">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Kilométrage" Binding="{Binding Kilometrage}" Width="110">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="120">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTemplateColumn Header="Actions" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Button Content="✏️ Modifier" Click="EditVehicle_Click" Tag="{Binding Id}"
+                                                Padding="10,6" Margin="5,0" Background="#FF9800" Foreground="White" 
+                                                BorderThickness="0" FontSize="11" Cursor="Hand">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" 
+                                                                        CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+
+                                        <Button Content="📈 KM" Click="UpdateKm_Click" Tag="{Binding Id}"
+                                                Padding="10,6" Margin="5,0" Background="#2196F3" Foreground="White" 
+                                                BorderThickness="0" FontSize="11" Cursor="Hand">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" 
+                                                                        CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+
+                                        <Button Content="🗑️" Click="DeleteVehicle_Click" Tag="{Binding Id}"
+                                                Padding="10,6" Margin="5,0" Background="#F44336" Foreground="White" 
+                                                BorderThickness="0" FontSize="11" Cursor="Hand">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" 
+                                                                        CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

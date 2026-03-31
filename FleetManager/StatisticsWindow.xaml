@@ -1,0 +1,93 @@
+﻿<Window x:Class="FleetManager.StatisticsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Statistiques véhicules" Height="600" Width="900"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Titre -->
+        <TextBlock Grid.Row="0" Text="📊 Statistiques des véhicules" 
+                   FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <!-- Filtres période -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+            <TextBlock Text="Période :" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <Button Content="📅 Aujourd'hui" Click="ShowToday_Click" Padding="12,6" Margin="0,0,5,0" 
+                    Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+            <Button Content="📅 Cette semaine" Click="ShowWeek_Click" Padding="12,6" Margin="0,0,5,0"
+                    Background="#2196F3" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+            <Button Content="📅 Ce mois" Click="ShowMonth_Click" Padding="12,6" Margin="0,0,5,0"
+                    Background="#FF9800" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+            <Button Content="📅 Cette année" Click="ShowYear_Click" Padding="12,6" Margin="0,0,5,0"
+                    Background="#9C27B0" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+            <Button Content="📅 Tout" Click="ShowAll_Click" Padding="12,6"
+                    Background="#607D8B" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+        </StackPanel>
+
+        <!-- Contenu des statistiques -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Titre période -->
+                <TextBlock x:Name="PeriodTitle" Text="" FontSize="16" FontWeight="Bold" 
+                           Margin="0,0,0,15" Foreground="#1976D2"/>
+
+                <!-- Statistiques globales -->
+                <Border Background="#E3F2FD" Padding="20" CornerRadius="8" Margin="0,0,0,15">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Véhicules ajoutés" FontSize="12" Foreground="Gray"/>
+                            <TextBlock x:Name="VehiclesAddedText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#4CAF50"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Modifications" FontSize="12" Foreground="Gray"/>
+                            <TextBlock x:Name="ModificationsText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#2196F3"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="MAJ kilométrage" FontSize="12" Foreground="Gray"/>
+                            <TextBlock x:Name="KmUpdatesText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#FF9800"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3">
+                            <TextBlock Text="Total KM parcourus" FontSize="12" Foreground="Gray"/>
+                            <TextBlock x:Name="TotalKmText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#9C27B0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Historique détaillé -->
+                <TextBlock Text="📋 Historique des actions" FontSize="16" FontWeight="Bold" Margin="0,10,0,10"/>
+
+                <DataGrid x:Name="HistoryDataGrid" AutoGenerateColumns="False" 
+                          CanUserAddRows="False" IsReadOnly="True" 
+                          AlternatingRowBackground="LightGray" Height="250">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="140"/>
+                        <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="200"/>
+                        <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="120"/>
+                        <DataGridTextColumn Header="Agent" Binding="{Binding Agent}" Width="150"/>
+                        <DataGridTextColumn Header="Détails" Binding="{Binding Details}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Bouton fermer -->
+        <Button Grid.Row="3" Content="Fermer" Click="CloseButton_Click"
+                Width="100" HorizontalAlignment="Right" Margin="0,15,0,0" Padding="10,8"/>
+    </Grid>
+</Window>
